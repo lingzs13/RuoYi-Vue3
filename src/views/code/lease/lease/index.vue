@@ -1,10 +1,28 @@
-<template>
+truetut<template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="资产编号" prop="uuid">
         <el-input
           v-model="queryParams.uuid"
           placeholder="请输入资产编号"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="资产类型" prop="type">
+        <el-select v-model="queryParams.type" placeholder="请选择资产类型" clearable>
+          <el-option
+            v-for="dict in device_type"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="资产名称" prop="name">
+        <el-input
+          v-model="queryParams.name"
+          placeholder="请输入资产名称"
           clearable
           @keyup.enter="handleQuery"
         />
@@ -105,6 +123,12 @@
       <el-table-column type="selection" width="55" align="center" />
       <!-- <el-table-column label="主键" align="center" prop="id" /> -->
       <el-table-column label="资产编号" align="center" prop="uuid" />
+      <el-table-column label="资产类型" align="center" prop="type">
+        <template #default="scope">
+          <dict-tag :options="device_type" :value="scope.row.type"/>
+        </template>
+      </el-table-column>
+      <el-table-column label="资产名称" align="center" prop="name" />
       <el-table-column label="状态" align="center" prop="status">
         <template #default="scope">
           <dict-tag :options="computer_status" :value="scope.row.status"/>
@@ -150,7 +174,7 @@
           type="success"
           plain
           icon="Edit"
-          @click="handleUpdateLease(scope.row)"
+          @click="handleUpdatereturn(scope.row)"
           v-hasPermi="['code:device:edit']"
         >归还</el-button>
       </el-col>
@@ -172,10 +196,23 @@
     <el-dialog :title="title" v-model="open" width="500px" append-to-body>
       <el-form ref="deviceRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="资产编号" prop="uuid">
-          <el-input v-model="form.uuid" disabled="ture" placeholder="请输入资产编号" />
+          <el-input v-model="form.uuid" :disabled="true" placeholder="请输入资产编号" />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-select v-model="form.status" placeholder="请选择状态">
+        <el-form-item label="资产类型" prop="type">
+          <el-select v-model="form.type" placeholder="请选择资产类型" :disabled="true">
+            <el-option
+              v-for="dict in device_type"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="资产名称" prop="name" >
+          <el-input v-model="form.name" placeholder="请输入资产名称" :disabled="true" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status"  >
+          <el-select v-model="form.status" placeholder="请选择状态" :disabled="true">
             <el-option
               v-for="dict in computer_status"
               :key="dict.value"
@@ -187,7 +224,7 @@
         <el-form-item label="入库时间" prop="purchaseDate">
           <el-date-picker clearable
             v-model="form.purchaseDate"
-            disabled="true"
+            :disabled="true"
             type="date"
             value-format="YYYY-MM-DD"
             placeholder="请选择入库时间">
@@ -197,7 +234,7 @@
           <el-date-picker clearable
             v-model="form.expectedRetirementDate"
             type="date"
-            disabled="true"
+            :disabled="true"
             value-format="YYYY-MM-DD"
             placeholder="请选择预计出库时间">
           </el-date-picker>
@@ -208,6 +245,14 @@
             type="date"
             value-format="YYYY-MM-DD"
             placeholder="租赁时间">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item v-show="form.status == '闲置中'" label="归还时间" prop="leaseEndTime">
+          <el-date-picker clearable
+            v-model="form.leaseEndTime"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="请选择归还时间">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="租借人" prop="employee">
@@ -242,7 +287,7 @@ import { listDevice, getDevice, delDevice} from "@/api/code/device";
 import {updateLease} from "@/api/code/lease/lease";
 
 const { proxy } = getCurrentInstance();
-const { description_id, computer_status } = proxy.useDict('description_id', 'computer_status');
+const { description_id, computer_status,device_type } = proxy.useDict('description_id', 'computer_status','device_type');
 
 const deviceList = ref([]);
 const open = ref(false);
@@ -253,7 +298,6 @@ const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
-
 const data = reactive({
   form: {
     leaseStartTime: null
@@ -262,7 +306,9 @@ const data = reactive({
     pageNum: 1,
     pageSize: 10,
     uuid: null,
-    status: "闲置中",
+    type: null,
+    name: null,
+    status: null,
     purchaseDate: null,
     expectedRetirementDate: null,
     employee: null,
@@ -297,6 +343,8 @@ function reset() {
   form.value = {
     id: null,
     uuid: null,
+    type: null,
+    name: null,
     status: null,
     purchaseDate: null,
     expectedRetirementDate: null,
@@ -334,7 +382,7 @@ function handleAdd() {
   title.value = "添加设备";
 }
 
-/** 修改按钮操作 */
+/** 租赁按钮 */
 function handleUpdateLease(row) {
   reset();
   const _id = row.id || ids.value
@@ -343,6 +391,22 @@ function handleUpdateLease(row) {
     open.value = true;
     title.value = "租赁设备";
     form.value.status = "租赁中";
+    //设置租赁时间为当前时间
+    form.value.leaseStartTime = formatToYYYYMMDD(new Date());
+    console.log(form.value.leaseStartTime)
+  });
+}
+/** 归还 */
+function handleUpdatereturn(row) {
+  reset();
+  const _id = row.id || ids.value
+  getDevice(_id).then(response => {
+    form.value = response.data;
+    open.value = true;
+    title.value = "归还设备";
+    form.value.status = "闲置中";
+    //设置归还时间为当前时间
+    form.value.leaseEndTime = formatToYYYYMMDD(new Date());
   });
 }
 
@@ -352,15 +416,18 @@ function submitForm() {
     if (valid) {
       if (form.value.id != null) {
         updateLease(form.value).then(response => {
-          proxy.$modal.msgSuccess("租赁成功");
+          proxy.$modal.msgSuccess("修改成功");
+          reset();
           open.value = false;
           getList();
         });
       } else {
-        proxy.$modal.msgSuccess("租赁失败");
+        proxy.$modal.msgSuccess("修改失败");
       }
     }
   });
+  
+  
 }
 
 /** 删除按钮操作 */
@@ -379,6 +446,13 @@ function handleExport() {
   proxy.download('code/device/export', {
     ...queryParams.value
   }, `device_${new Date().getTime()}.xlsx`)
+}
+
+function formatToYYYYMMDD(date) {
+    var year = date.getFullYear();
+    var month = (date.getMonth() + 1).toString().padStart(2, '0'); // getMonth() 返回 0-11
+    var day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 getList();

@@ -9,6 +9,24 @@
           @keyup.enter="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="资产类型" prop="type">
+        <el-select v-model="queryParams.type" placeholder="请选择资产类型" clearable>
+          <el-option
+            v-for="dict in device_type"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="资产名称" prop="name">
+        <el-input
+          v-model="queryParams.name"
+          placeholder="请输入资产名称"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
           <el-option
@@ -113,6 +131,12 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="主键" align="center" prop="id" />
       <el-table-column label="资产编号" align="center" prop="uuid" />
+      <el-table-column label="资产类型" align="center" prop="type">
+        <template #default="scope">
+          <dict-tag :options="device_type" :value="scope.row.type"/>
+        </template>
+      </el-table-column>
+      <el-table-column label="资产名称" align="center" prop="name" />
       <el-table-column label="状态" align="center" prop="status">
         <template #default="scope">
           <dict-tag :options="computer_status" :value="scope.row.status"/>
@@ -161,6 +185,19 @@
       <el-form ref="deviceRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="资产编号" prop="uuid">
           <el-input v-model="form.uuid" placeholder="请输入资产编号" />
+        </el-form-item>
+        <el-form-item label="资产类型" prop="type">
+          <el-select v-model="form.type" placeholder="请选择资产类型">
+            <el-option
+              v-for="dict in device_type"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.value"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="资产名称" prop="name">
+          <el-input v-model="form.name" placeholder="请输入资产名称" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-select v-model="form.status" placeholder="请选择状态">
@@ -227,7 +264,7 @@
 import { listDevice, getDevice, delDevice, addDevice, updateDevice } from "@/api/code/device";
 
 const { proxy } = getCurrentInstance();
-const { description_id, computer_status } = proxy.useDict('description_id', 'computer_status');
+const { description_id, computer_status, device_type } = proxy.useDict('description_id', 'computer_status', 'device_type');
 
 const deviceList = ref([]);
 const open = ref(false);
@@ -245,6 +282,8 @@ const data = reactive({
     pageNum: 1,
     pageSize: 10,
     uuid: null,
+    type: null,
+    name: null,
     status: null,
     purchaseDate: null,
     expectedRetirementDate: null,
@@ -280,6 +319,8 @@ function reset() {
   form.value = {
     id: null,
     uuid: null,
+    type: null,
+    name: null,
     status: null,
     purchaseDate: null,
     expectedRetirementDate: null,

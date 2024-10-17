@@ -9,7 +9,7 @@
           @keyup.enter="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="资产类型" prop="type">
+      <el-form-item label="资产类型" prop="type" style="width: 200px">
         <el-select v-model="queryParams.type" placeholder="请选择资产类型" clearable>
           <el-option
             v-for="dict in device_type"
@@ -35,7 +35,7 @@
           @keyup.enter="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="租借部门" prop="department">
+      <el-form-item label="租借部门" prop="department" style="width: 200px">
         <el-select v-model="queryParams.department" placeholder="请选择租借部门" clearable>
           <el-option
             v-for="dict in description_id"
@@ -127,7 +127,7 @@
 
     <el-table v-loading="loading" :data="recordList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="主键id" align="center" prop="id" />
+      <!-- <el-table-column label="主键id" align="center" prop="id" /> -->
       <el-table-column label="资产编号" align="center" prop="uuid" />
       <el-table-column label="资产类型" align="center" prop="type">
         <template #default="scope">
