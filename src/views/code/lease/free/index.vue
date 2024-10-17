@@ -110,7 +110,7 @@
           <dict-tag :options="computer_status" :value="scope.row.status"/>
         </template>
       </el-table-column>
-      <el-table-column label="入库时间" align="center" prop="purchaseDate" width="180">
+      <!-- <el-table-column label="入库时间" align="center" prop="purchaseDate" width="180">
         <template #default="scope">
           <span>{{ parseTime(scope.row.purchaseDate, '{y}-{m}-{d}') }}</span>
         </template>
@@ -118,6 +118,16 @@
       <el-table-column label="预计出库时间" align="center" prop="expectedRetirementDate" width="180">
         <template #default="scope">
           <span>{{ parseTime(scope.row.expectedRetirementDate, '{y}-{m}-{d}') }}</span>
+        </template>
+      </el-table-column> -->
+      <el-table-column label="租借时间" align="center" prop="leaseStartTime" width="180">
+        <template #default="scope">
+          <span>{{ parseTime(scope.row.leaseStartTime, '{y}-{m}-{d}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="归还时间" align="center" prop="leaseEndTime" width="180">
+        <template #default="scope">
+          <span>{{ parseTime(scope.row.leaseEndTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="租借人" align="center" prop="employee" />
@@ -129,8 +139,18 @@
       <el-table-column label="备注" align="center" prop="note" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['code:device:edit']">修改</el-button>
-          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['code:device:remove']">删除</el-button>
+          <el-col :span="1.5">
+        <el-button
+          v-if="scope.row.status == '租赁中'"
+          type="success"
+          plain
+          icon="Edit"
+          @click="handleUpdateLease(scope.row)"
+          v-hasPermi="['code:device:edit']"
+        >租赁</el-button>
+      </el-col>
+          <!-- <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['code:device:edit']">修改</el-button> -->
+          <!-- <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['code:device:remove']">删除</el-button> -->
         </template>
       </el-table-column>
     </el-table>
@@ -159,7 +179,7 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="入库时间" prop="purchaseDate">
+        <!-- <el-form-item label="入库时间" prop="purchaseDate">
           <el-date-picker clearable
             v-model="form.purchaseDate"
             type="date"
@@ -174,7 +194,7 @@
             value-format="YYYY-MM-DD"
             placeholder="请选择预计出库时间">
           </el-date-picker>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="租借人" prop="employee">
           <el-input v-model="form.employee" placeholder="请输入租借人" />
         </el-form-item>
@@ -187,6 +207,22 @@
               :value="dict.value"
             ></el-option>
           </el-select>
+        </el-form-item>
+        <el-form-item label="租借时间" prop="leaseStartTime">
+          <el-date-picker clearable
+            v-model="form.leaseStartTime"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="请选择租借时间">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="归还时间" prop="leaseEndTime">
+          <el-date-picker clearable
+            v-model="form.leaseEndTime"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="请选择归还时间">
+          </el-date-picker>
         </el-form-item>
         <el-form-item label="备注" prop="note">
           <el-input v-model="form.note" type="textarea" placeholder="请输入内容" />
@@ -204,7 +240,7 @@
 
 <script setup name="Device">
 import { listDevice, getDevice, delDevice, addDevice, updateDevice } from "@/api/code/device";
-
+import {updateLease} from "@/api/code/lease/lease";
 const { proxy } = getCurrentInstance();
 const { description_id, computer_status } = proxy.useDict('description_id', 'computer_status');
 
@@ -219,7 +255,9 @@ const total = ref(0);
 const title = ref("");
 
 const data = reactive({
-  form: {},
+  form: {
+    leaseEndTime:null
+  },
   queryParams: {
     pageNum: 1,
     pageSize: 10,
@@ -229,6 +267,7 @@ const data = reactive({
     expectedRetirementDate: null,
     employee: null,
     department: null,
+    leaseStartTime: null,
     note: null
   },
   rules: {
@@ -263,6 +302,7 @@ function reset() {
     expectedRetirementDate: null,
     employee: null,
     department: null,
+    leaseStartTime: null,
     note: null
   };
   proxy.resetForm("deviceRef");
@@ -295,13 +335,13 @@ function handleAdd() {
 }
 
 /** 修改按钮操作 */
-function handleUpdate(row) {
+function handleUpdateLease(row) {
   reset();
   const _id = row.id || ids.value
   getDevice(_id).then(response => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改设备";
+    title.value = "归还设备";
   });
 }
 
@@ -310,17 +350,13 @@ function submitForm() {
   proxy.$refs["deviceRef"].validate(valid => {
     if (valid) {
       if (form.value.id != null) {
-        updateDevice(form.value).then(response => {
+        updateLease(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
           open.value = false;
           getList();
         });
       } else {
-        addDevice(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功");
-          open.value = false;
-          getList();
-        });
+        proxy.$modal.msgSuccess("修改失败");
       }
     }
   });

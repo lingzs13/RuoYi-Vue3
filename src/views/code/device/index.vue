@@ -53,6 +53,14 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="租借时间" prop="leaseStartTime">
+        <el-date-picker clearable
+          v-model="queryParams.leaseStartTime"
+          type="date"
+          value-format="YYYY-MM-DD"
+          placeholder="请选择租借时间">
+        </el-date-picker>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
         <el-button icon="Refresh" @click="resetQuery">重置</el-button>
@@ -103,7 +111,7 @@
 
     <el-table v-loading="loading" :data="deviceList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <!-- <el-table-column label="主键" align="center" prop="id" /> -->
+      <el-table-column label="主键" align="center" prop="id" />
       <el-table-column label="资产编号" align="center" prop="uuid" />
       <el-table-column label="状态" align="center" prop="status">
         <template #default="scope">
@@ -124,6 +132,11 @@
       <el-table-column label="租借部门" align="center" prop="department">
         <template #default="scope">
           <dict-tag :options="description_id" :value="scope.row.department"/>
+        </template>
+      </el-table-column>
+      <el-table-column label="租借时间" align="center" prop="leaseStartTime" width="180">
+        <template #default="scope">
+          <span>{{ parseTime(scope.row.leaseStartTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="备注" align="center" prop="note" />
@@ -188,6 +201,14 @@
             ></el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="租借时间" prop="leaseStartTime">
+          <el-date-picker clearable
+            v-model="form.leaseStartTime"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="请选择租借时间">
+          </el-date-picker>
+        </el-form-item>
         <el-form-item label="备注" prop="note">
           <el-input v-model="form.note" type="textarea" placeholder="请输入内容" />
         </el-form-item>
@@ -229,6 +250,7 @@ const data = reactive({
     expectedRetirementDate: null,
     employee: null,
     department: null,
+    leaseStartTime: null,
     note: null
   },
   rules: {
@@ -263,6 +285,7 @@ function reset() {
     expectedRetirementDate: null,
     employee: null,
     department: null,
+    leaseStartTime: null,
     note: null
   };
   proxy.resetForm("deviceRef");

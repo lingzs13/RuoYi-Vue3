@@ -126,6 +126,11 @@
           <dict-tag :options="description_id" :value="scope.row.department"/>
         </template>
       </el-table-column>
+      <el-table-column label="租借时间" align="center" prop="leaseStartTime" width="180">
+        <template #default="scope">
+          <span>{{ parseTime(scope.row.leaseStartTime, '{y}-{m}-{d}') }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="备注" align="center" prop="note" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
@@ -138,6 +143,16 @@
           @click="handleUpdateLease(scope.row)"
           v-hasPermi="['code:device:edit']"
         >租赁</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          v-if="scope.row.status == '租赁中'"
+          type="success"
+          plain
+          icon="Edit"
+          @click="handleUpdateLease(scope.row)"
+          v-hasPermi="['code:device:edit']"
+        >归还</el-button>
       </el-col>
           <!-- <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['code:device:edit']">修改</el-button>
           <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['code:device:remove']">删除</el-button> -->
@@ -169,9 +184,10 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <!-- <el-form-item label="入库时间" prop="purchaseDate">
+        <el-form-item label="入库时间" prop="purchaseDate">
           <el-date-picker clearable
             v-model="form.purchaseDate"
+            disabled="true"
             type="date"
             value-format="YYYY-MM-DD"
             placeholder="请选择入库时间">
@@ -181,9 +197,11 @@
           <el-date-picker clearable
             v-model="form.expectedRetirementDate"
             type="date"
+            disabled="true"
             value-format="YYYY-MM-DD"
             placeholder="请选择预计出库时间">
-          </el-date-picker> -->
+          </el-date-picker>
+          </el-form-item>
           <el-form-item label="租赁时间" prop="leaseStartTime">
           <el-date-picker clearable
             v-model="form.leaseStartTime"
@@ -249,6 +267,7 @@ const data = reactive({
     expectedRetirementDate: null,
     employee: null,
     department: null,
+    leaseStartTime: null,
     note: null
   },
   rules: {
@@ -283,6 +302,7 @@ function reset() {
     expectedRetirementDate: null,
     employee: null,
     department: null,
+    leaseStartTime: null,
     note: null
   };
   proxy.resetForm("deviceRef");

@@ -51,6 +51,14 @@
           @keyup.enter="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="备注" prop="note">
+        <el-input
+          v-model="queryParams.note"
+          placeholder="请输入备注"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
         <el-button icon="Refresh" @click="resetQuery">重置</el-button>
@@ -101,7 +109,7 @@
 
     <el-table v-loading="loading" :data="recordList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <!-- <el-table-column label="主键id" align="center" prop="id" /> -->
+      <el-table-column label="主键id" align="center" prop="id" />
       <el-table-column label="资产编号" align="center" prop="deviceUuid" />
       <el-table-column label="租借人" align="center" prop="employee" />
       <el-table-column label="租借部门" align="center" prop="department">
@@ -120,6 +128,7 @@
         </template>
       </el-table-column>
       <el-table-column label="租借天数" align="center" prop="allTime" />
+      <el-table-column label="备注" align="center" prop="note" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['code:record:edit']">修改</el-button>
@@ -208,7 +217,8 @@ const data = reactive({
     department: null,
     leaseStartTime: null,
     leaseEndTime: null,
-    allTime: null
+    allTime: null,
+    note: null
   },
   rules: {
   }
@@ -241,7 +251,8 @@ function reset() {
     department: null,
     leaseStartTime: null,
     leaseEndTime: null,
-    allTime: null
+    allTime: null,
+    note: null
   };
   proxy.resetForm("recordRef");
 }
