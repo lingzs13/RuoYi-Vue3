@@ -19,10 +19,28 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="厂商" prop="supplier">
+        <el-select v-model="queryParams.supplier" placeholder="请选择厂商" clearable>
+          <el-option
+            v-for="dict in supplier_name_id"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="资产名称" prop="name">
         <el-input
           v-model="queryParams.name"
           placeholder="请输入资产名称"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="价格" prop="price">
+        <el-input
+          v-model="queryParams.price"
+          placeholder="请输入价格"
           clearable
           @keyup.enter="handleQuery"
         />
@@ -136,7 +154,13 @@
           <dict-tag :options="device_type" :value="scope.row.type"/>
         </template>
       </el-table-column>
+      <el-table-column label="厂商" align="center" prop="supplier">
+        <template #default="scope">
+          <dict-tag :options="supplier_name_id" :value="scope.row.supplier"/>
+        </template>
+      </el-table-column>
       <el-table-column label="资产名称" align="center" prop="name" />
+      <el-table-column label="价格" align="center" prop="price" />
       <el-table-column label="状态" align="center" prop="status">
         <template #default="scope">
           <dict-tag :options="computer_status" :value="scope.row.status"/>
@@ -192,6 +216,16 @@
               v-for="dict in device_type"
               :key="dict.value"
               :label="dict.label"
+              :value="parseInt(dict.value)"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="厂商" prop="supplier">
+          <el-select v-model="form.supplier" placeholder="请选择厂商">
+            <el-option
+              v-for="dict in supplier_name_id"
+              :key="dict.value"
+              :label="dict.label"
               :value="dict.value"
             ></el-option>
           </el-select>
@@ -199,13 +233,16 @@
         <el-form-item label="资产名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入资产名称" />
         </el-form-item>
+        <el-form-item label="价格" prop="price">
+          <el-input v-model="form.price" placeholder="请输入价格" />
+        </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-select v-model="form.status" placeholder="请选择状态">
             <el-option
               v-for="dict in computer_status"
               :key="dict.value"
               :label="dict.label"
-              :value="dict.value"
+              :value="parseInt(dict.value)"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -234,7 +271,7 @@
               v-for="dict in description_id"
               :key="dict.value"
               :label="dict.label"
-              :value="dict.value"
+              :value="parseInt(dict.value)"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -264,7 +301,7 @@
 import { listDevice, getDevice, delDevice, addDevice, updateDevice } from "@/api/code/device";
 
 const { proxy } = getCurrentInstance();
-const { description_id, computer_status, device_type } = proxy.useDict('description_id', 'computer_status', 'device_type');
+const { description_id, computer_status, device_type, supplier_name_id } = proxy.useDict('description_id', 'computer_status', 'device_type', 'supplier_name_id');
 
 const deviceList = ref([]);
 const open = ref(false);
@@ -283,7 +320,9 @@ const data = reactive({
     pageSize: 10,
     uuid: null,
     type: null,
+    supplier: null,
     name: null,
+    price: null,
     status: null,
     purchaseDate: null,
     expectedRetirementDate: null,
@@ -320,7 +359,9 @@ function reset() {
     id: null,
     uuid: null,
     type: null,
+    supplier: null,
     name: null,
+    price: null,
     status: null,
     purchaseDate: null,
     expectedRetirementDate: null,

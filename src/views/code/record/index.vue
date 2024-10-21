@@ -9,6 +9,14 @@
           @keyup.enter="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="厂商" prop="supplier">
+        <el-input
+          v-model="queryParams.supplier"
+          placeholder="请输入厂商"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
       <el-form-item label="资产类型" prop="type">
         <el-select v-model="queryParams.type" placeholder="请选择资产类型" clearable>
           <el-option
@@ -19,6 +27,14 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="价格" prop="price">
+        <el-input
+          v-model="queryParams.price"
+          placeholder="请输入价格"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
       <el-form-item label="资产名称" prop="name">
         <el-input
           v-model="queryParams.name"
@@ -26,6 +42,16 @@
           clearable
           @keyup.enter="handleQuery"
         />
+      </el-form-item>
+      <el-form-item label="状态" prop="status">
+        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
+          <el-option
+            v-for="dict in computer_status"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="租借人" prop="employee">
         <el-input
@@ -65,6 +91,22 @@
         <el-input
           v-model="queryParams.allTime"
           placeholder="请输入租借天数"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="月份" prop="allMonths">
+        <el-input
+          v-model="queryParams.allMonths"
+          placeholder="请输入月份"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="租金" prop="rent">
+        <el-input
+          v-model="queryParams.rent"
+          placeholder="请输入租金"
           clearable
           @keyup.enter="handleQuery"
         />
@@ -129,13 +171,19 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="主键id" align="center" prop="id" />
       <el-table-column label="资产编号" align="center" prop="uuid" />
+      <el-table-column label="厂商" align="center" prop="supplier" />
       <el-table-column label="资产类型" align="center" prop="type">
         <template #default="scope">
           <dict-tag :options="device_type" :value="scope.row.type"/>
         </template>
       </el-table-column>
+      <el-table-column label="价格" align="center" prop="price" />
       <el-table-column label="资产名称" align="center" prop="name" />
-      <el-table-column label="状态" align="center" prop="status" />
+      <el-table-column label="状态" align="center" prop="status">
+        <template #default="scope">
+          <dict-tag :options="computer_status" :value="scope.row.status"/>
+        </template>
+      </el-table-column>
       <el-table-column label="租借人" align="center" prop="employee" />
       <el-table-column label="租借部门" align="center" prop="department">
         <template #default="scope">
@@ -153,6 +201,8 @@
         </template>
       </el-table-column>
       <el-table-column label="租借天数" align="center" prop="allTime" />
+      <el-table-column label="月份" align="center" prop="allMonths" />
+      <el-table-column label="租金" align="center" prop="rent" />
       <el-table-column label="备注" align="center" prop="note" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
@@ -176,18 +226,34 @@
         <el-form-item label="资产编号" prop="uuid">
           <el-input v-model="form.uuid" placeholder="请输入资产编号" />
         </el-form-item>
+        <el-form-item label="厂商" prop="supplier">
+          <el-input v-model="form.supplier" placeholder="请输入厂商" />
+        </el-form-item>
         <el-form-item label="资产类型" prop="type">
           <el-select v-model="form.type" placeholder="请选择资产类型">
             <el-option
               v-for="dict in device_type"
               :key="dict.value"
               :label="dict.label"
-              :value="dict.value"
+              :value="parseInt(dict.value)"
             ></el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="价格" prop="price">
+          <el-input v-model="form.price" placeholder="请输入价格" />
+        </el-form-item>
         <el-form-item label="资产名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入资产名称" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="form.status" placeholder="请选择状态">
+            <el-option
+              v-for="dict in computer_status"
+              :key="dict.value"
+              :label="dict.label"
+              :value="parseInt(dict.value)"
+            ></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="租借人" prop="employee">
           <el-input v-model="form.employee" placeholder="请输入租借人" />
@@ -198,7 +264,7 @@
               v-for="dict in description_id"
               :key="dict.value"
               :label="dict.label"
-              :value="dict.value"
+              :value="parseInt(dict.value)"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -221,6 +287,12 @@
         <el-form-item label="租借天数" prop="allTime">
           <el-input v-model="form.allTime" placeholder="请输入租借天数" />
         </el-form-item>
+        <el-form-item label="月份" prop="allMonths">
+          <el-input v-model="form.allMonths" placeholder="请输入月份" />
+        </el-form-item>
+        <el-form-item label="租金" prop="rent">
+          <el-input v-model="form.rent" placeholder="请输入租金" />
+        </el-form-item>
         <el-form-item label="备注" prop="note">
           <el-input v-model="form.note" placeholder="请输入备注" />
         </el-form-item>
@@ -239,7 +311,7 @@
 import { listRecord, getRecord, delRecord, addRecord, updateRecord } from "@/api/code/record";
 
 const { proxy } = getCurrentInstance();
-const { description_id, device_type } = proxy.useDict('description_id', 'device_type');
+const { description_id, computer_status, device_type } = proxy.useDict('description_id', 'computer_status', 'device_type');
 
 const recordList = ref([]);
 const open = ref(false);
@@ -257,7 +329,9 @@ const data = reactive({
     pageNum: 1,
     pageSize: 10,
     uuid: null,
+    supplier: null,
     type: null,
+    price: null,
     name: null,
     status: null,
     employee: null,
@@ -265,6 +339,8 @@ const data = reactive({
     leaseStartTime: null,
     leaseEndTime: null,
     allTime: null,
+    allMonths: null,
+    rent: null,
     note: null
   },
   rules: {
@@ -294,7 +370,9 @@ function reset() {
   form.value = {
     id: null,
     uuid: null,
+    supplier: null,
     type: null,
+    price: null,
     name: null,
     status: null,
     employee: null,
@@ -302,6 +380,8 @@ function reset() {
     leaseStartTime: null,
     leaseEndTime: null,
     allTime: null,
+    allMonths: null,
+    rent: null,
     note: null
   };
   proxy.resetForm("recordRef");

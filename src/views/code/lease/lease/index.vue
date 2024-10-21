@@ -19,10 +19,28 @@ truetut<template>
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="厂商" prop="supplier">
+        <el-select v-model="queryParams.supplier" placeholder="请选择厂商" clearable>
+          <el-option
+            v-for="dict in supplier_name_id"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="资产名称" prop="name">
         <el-input
           v-model="queryParams.name"
           placeholder="请输入资产名称"
+          clearable
+          @keyup.enter="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="价格" prop="price">
+        <el-input
+          v-model="queryParams.price"
+          placeholder="请输入价格"
           clearable
           @keyup.enter="handleQuery"
         />
@@ -33,7 +51,7 @@ truetut<template>
             v-for="dict in computer_status"
             :key="dict.value"
             :label="dict.label"
-            :value="dict.value"
+            :value="parseInt(dict.value)"
           />
         </el-select>
       </el-form-item>
@@ -78,35 +96,6 @@ truetut<template>
     </el-form>
 
     <el-row :gutter="10" class="mb8">
-      <!-- <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="Plus"
-          @click="handleAdd"
-          v-hasPermi="['code:device:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="Edit"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['code:device:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="Delete"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['code:device:remove']"
-        >删除</el-button>
-      </el-col> -->
       <el-col :span="1.5">
         <el-button
           type="warning"
@@ -128,7 +117,17 @@ truetut<template>
           <dict-tag :options="device_type" :value="scope.row.type"/>
         </template>
       </el-table-column>
+      <el-table-column label="厂商" align="center" prop="supplier">
+        <template #default="scope">
+          <dict-tag :options="supplier_name_id" :value="scope.row.supplier"/>
+        </template>
+      </el-table-column>
       <el-table-column label="资产名称" align="center" prop="name" />
+      <el-table-column label="价格" align="center" prop="price" >
+        <template #default="scope">
+          <span>￥{{ scope.row.price }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="状态" align="center" prop="status">
         <template #default="scope">
           <dict-tag :options="computer_status" :value="scope.row.status"/>
@@ -160,7 +159,7 @@ truetut<template>
         <template #default="scope">
           <el-col :span="1.5">
         <el-button
-          v-if="scope.row.status == '闲置中'"
+          v-if="scope.row.status == 1"
           type="success"
           plain
           icon="Edit"
@@ -170,7 +169,7 @@ truetut<template>
       </el-col>
       <el-col :span="1.5">
         <el-button
-          v-if="scope.row.status == '租赁中'"
+          v-if="scope.row.status == 2"
           type="success"
           plain
           icon="Edit"
@@ -178,8 +177,6 @@ truetut<template>
           v-hasPermi="['code:device:edit']"
         >归还</el-button>
       </el-col>
-          <!-- <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['code:device:edit']">修改</el-button>
-          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['code:device:remove']">删除</el-button> -->
         </template>
       </el-table-column>
     </el-table>
@@ -204,12 +201,26 @@ truetut<template>
               v-for="dict in device_type"
               :key="dict.value"
               :label="dict.label"
-              :value="dict.value"
+              :value="parseInt(dict.value)"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="厂商" prop="supplier">
+          <el-select v-model="form.supplier" placeholder="请选择厂商" :disabled="true">
+            <el-option
+            
+              v-for="dict in supplier_name_id"
+              :key="dict.value"
+              :label="dict.label"
+              :value="parseInt(dict.value)"
             ></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="资产名称" prop="name" >
           <el-input v-model="form.name" placeholder="请输入资产名称" :disabled="true" />
+        </el-form-item>
+        <el-form-item label="价格" prop="price" >
+          <el-input v-model="form.price" placeholder="请输入价格" :disabled="true" />
         </el-form-item>
         <el-form-item label="状态" prop="status"  >
           <el-select v-model="form.status" placeholder="请选择状态" :disabled="true">
@@ -217,7 +228,7 @@ truetut<template>
               v-for="dict in computer_status"
               :key="dict.value"
               :label="dict.label"
-              :value="dict.value"
+              :value="parseInt(dict.value)"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -247,7 +258,7 @@ truetut<template>
             placeholder="租赁时间">
           </el-date-picker>
         </el-form-item>
-        <el-form-item v-show="form.status == '闲置中'" label="归还时间" prop="leaseEndTime">
+        <el-form-item v-show="form.status == 1" label="归还时间" prop="leaseEndTime">
           <el-date-picker clearable
             v-model="form.leaseEndTime"
             type="date"
@@ -264,7 +275,7 @@ truetut<template>
               v-for="dict in description_id"
               :key="dict.value"
               :label="dict.label"
-              :value="dict.value"
+              :value="parseInt(dict.value)"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -287,7 +298,7 @@ import { listDevice, getDevice, delDevice} from "@/api/code/device";
 import {updateLease} from "@/api/code/lease/lease";
 
 const { proxy } = getCurrentInstance();
-const { description_id, computer_status,device_type } = proxy.useDict('description_id', 'computer_status','device_type');
+const { description_id, computer_status,device_type, supplier_name_id } = proxy.useDict('description_id', 'computer_status','device_type', 'supplier_name_id');
 
 const deviceList = ref([]);
 const open = ref(false);
@@ -307,7 +318,9 @@ const data = reactive({
     pageSize: 10,
     uuid: null,
     type: null,
+    supplier: null,
     name: null,
+    price: null,
     status: null,
     purchaseDate: null,
     expectedRetirementDate: null,
@@ -317,6 +330,39 @@ const data = reactive({
     note: null
   },
   rules: {
+    uuid: [
+      { required: true, message: "资产编号不能为空", trigger: "blur" }
+    ],
+    type: [
+      { required: true, message: "资产类型不能为空", trigger: "change" }
+    ],
+    supplier: [
+      { required: true, message: "厂商不能为空", trigger: "change" }
+    ],
+    name: [
+      { required: true, message: "资产名称不能为空", trigger: "blur" }
+    ],
+    price: [
+      { required: true, message: "价格不能为空", trigger: "blur" }
+    ],
+    status: [
+      { required: true, message: "状态不能为空", trigger: "change" }
+    ],
+    purchaseDate: [
+      { required: true, message: "入库时间不能为空", trigger: "blur" }
+    ],
+    expectedRetirementDate: [
+      { required: true, message: "预计出库时间不能为空", trigger: "blur" }
+    ],
+    employee: [
+      { required: true, message: "租借人不能为空", trigger: "blur" }
+    ],
+    department: [
+      { required: true, message: "租借部门不能为空", trigger: "change" }
+    ],
+    leaseStartTime: [
+      { required: true, message: "租借时间不能为空", trigger: "blur" }
+    ],
   }
 });
 
@@ -344,7 +390,9 @@ function reset() {
     id: null,
     uuid: null,
     type: null,
+    supplier: null,
     name: null,
+    price: null,
     status: null,
     purchaseDate: null,
     expectedRetirementDate: null,
@@ -390,7 +438,7 @@ function handleUpdateLease(row) {
     form.value = response.data;
     open.value = true;
     title.value = "租赁设备";
-    form.value.status = "租赁中";
+    form.value.status = 2;
     //设置租赁时间为当前时间
     form.value.leaseStartTime = formatToYYYYMMDD(new Date());
     console.log(form.value.leaseStartTime)
@@ -404,7 +452,7 @@ function handleUpdatereturn(row) {
     form.value = response.data;
     open.value = true;
     title.value = "归还设备";
-    form.value.status = "闲置中";
+    form.value.status = 1;
     //设置归还时间为当前时间
     form.value.leaseEndTime = formatToYYYYMMDD(new Date());
   });
