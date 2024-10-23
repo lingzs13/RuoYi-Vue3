@@ -2,15 +2,15 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="资产编号" prop="uuid">
-        <el-input v-model="queryParams.uuid" placeholder="请输入资产编号" clearable @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.uuid" placeholder="请输入资产编号" clearable @keyup.enter="handleQuery" style="width: 200px"/>
       </el-form-item>
       <el-form-item label="资产类型" prop="type">
-        <el-select v-model="queryParams.type" placeholder="请选择资产类型" clearable>
-          <el-option v-for="dict in device_type" :key="dict.value" :label="dict.label" :value="dict.value" />
+        <el-select v-model="queryParams.type" placeholder="请选择资产类型" clearable style="width: 200px">
+          <el-option v-for="dict in device_type" :key="dict.value" :label="dict.label" :value="dict.value"/>
         </el-select>
       </el-form-item>
       <el-form-item label="厂商" prop="supplier">
-        <el-select v-model="queryParams.supplier" placeholder="请选择厂商" clearable>
+        <el-select v-model="queryParams.supplier" placeholder="请选择厂商" clearable style="width: 200px" >
           <el-option
             v-for="dict in supplier_name_id"
             :key="dict.value"
@@ -31,7 +31,7 @@
         />
       </el-form-item>
       <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
+        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable style="width: 200px">
           <el-option v-for="dict in computer_status" :key="dict.value" :label="dict.label" :value="dict.value" />
         </el-select>
       </el-form-item>
@@ -40,7 +40,7 @@
           placeholder="请选择入库时间">
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="预计出库时间" prop="expectedRetirementDate">
+      <el-form-item label="出库时间" prop="expectedRetirementDate">
         <el-date-picker clearable v-model="queryParams.expectedRetirementDate" type="date" value-format="YYYY-MM-DD"
           placeholder="请选择预计出库时间">
         </el-date-picker>
@@ -49,8 +49,8 @@
         <el-input v-model="queryParams.employee" placeholder="请输入租借人" clearable @keyup.enter="handleQuery" />
       </el-form-item>
       <el-form-item label="租借部门" prop="department">
-        <el-select v-model="queryParams.department" placeholder="请选择租借部门" clearable>
-          <el-option v-for="dict in description_id" :key="dict.value" :label="dict.label" :value="dict.value" />
+        <el-select v-model="queryParams.department" placeholder="请选择租借部门" clearable style="width: 200px">
+          <el-option v-for="dict in description_id" :key="dict.value" :label="dict.label" :value="dict.value"  />
         </el-select>
       </el-form-item>
       <el-form-item label="租借时间" prop="leaseStartTime">
@@ -66,23 +66,23 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button type="primary" plain icon="Plus" @click="handleAdd" v-hasPermi="['code:device:add']">新增</el-button>
+        <el-button type="primary" plain icon="Plus" @click="handleAdd" >新增</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate"
-          v-hasPermi="['code:device:edit']">修改</el-button>
+          >修改</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete"
-          v-hasPermi="['code:device:remove']">删除</el-button>
+          >删除</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="warning" plain icon="Download" @click="handleExport"
-          v-hasPermi="['code:device:export']">导出</el-button>
+          >导出</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button type="warning" plain icon="Upload" @click="handleImport"
-          v-hasPermi="['code:device:add']">导入</el-button>
+          >导入</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
@@ -136,9 +136,9 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
           <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-            v-hasPermi="['code:device:edit']">修改</el-button>
+            >修改</el-button>
           <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
-            v-hasPermi="['code:device:remove']">删除</el-button>
+            >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -155,7 +155,7 @@
         <el-form-item label="资产类型" prop="type">
           <el-select v-model="form.type" placeholder="请选择资产类型">
             <el-option v-for="dict in device_type" :key="dict.value" :label="dict.label"
-              :value="dict.value"></el-option>
+              :value="parseInt(dict.value)"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="厂商" prop="supplier">
@@ -164,7 +164,7 @@
               v-for="dict in supplier_name_id"
               :key="dict.value"
               :label="dict.label"
-              :value="dict.value"
+              :value="parseInt(dict.value)"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -177,7 +177,7 @@
         <el-form-item label="状态" prop="status">
           <el-select v-model="form.status" placeholder="请选择状态">
             <el-option v-for="dict in computer_status" :key="dict.value" :label="dict.label"
-              :value="dict.value"></el-option>
+              :value="parseInt(dict.value)"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="入库时间" prop="purchaseDate">
@@ -196,7 +196,7 @@
         <el-form-item label="租借部门" prop="department">
           <el-select v-model="form.department" placeholder="请选择租借部门">
             <el-option v-for="dict in description_id" :key="dict.value" :label="dict.label"
-              :value="dict.value"></el-option>
+              :value="parseInt(dict.value)"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="租借时间" prop="leaseStartTime">
@@ -276,6 +276,30 @@ const data = reactive({
     note: null
   },
   rules: {
+    uuid: [
+      { required: true, message: "资产编号不能为空", trigger: "blur" }
+    ],
+    type: [
+      { required: true, message: "资产类型不能为空", trigger: "change" }
+    ],
+    supplier: [
+      { required: true, message: "厂商不能为空", trigger: "change" }
+    ],
+    name: [
+      { required: true, message: "资产名称不能为空", trigger: "blur" }
+    ],
+    price: [
+      { required: true, message: "价格不能为空", trigger: "blur" }
+    ],
+    status: [
+      { required: true, message: "状态不能为空", trigger: "change" }
+    ],
+    purchaseDate: [
+      { required: true, message: "入库时间不能为空", trigger: "blur" }
+    ],
+    expectedRetirementDate: [
+      { required: true, message: "预计出库时间不能为空", trigger: "blur" }
+    ],
   }
 });
 // import { importTemplate } from "@/api/system/user";

@@ -18,7 +18,7 @@
         />
       </el-form-item>
       <el-form-item label="资产类型" prop="type">
-        <el-select v-model="queryParams.type" placeholder="请选择资产类型" clearable>
+        <el-select v-model="queryParams.type" placeholder="请选择资产类型" clearable style="width: 200px">
           <el-option
             v-for="dict in device_type"
             :key="dict.value"
@@ -44,7 +44,7 @@
         />
       </el-form-item>
       <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
+        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable style="width: 200px">
           <el-option
             v-for="dict in computer_status"
             :key="dict.value"
@@ -62,7 +62,7 @@
         />
       </el-form-item>
       <el-form-item label="租借部门" prop="department">
-        <el-select v-model="queryParams.department" placeholder="请选择租借部门" clearable>
+        <el-select v-model="queryParams.department" placeholder="请选择租借部门" clearable style="width: 200px">
           <el-option
             v-for="dict in description_id"
             :key="dict.value"
@@ -132,7 +132,6 @@
           plain
           icon="Plus"
           @click="handleAdd"
-          v-hasPermi="['code:record:add']"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -142,7 +141,6 @@
           icon="Edit"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['code:record:edit']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -152,7 +150,7 @@
           icon="Delete"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['code:record:remove']"
+
         >删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -161,7 +159,6 @@
           plain
           icon="Download"
           @click="handleExport"
-          v-hasPermi="['code:record:export']"
         >导出</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
@@ -218,8 +215,8 @@
       <el-table-column label="备注" align="center" prop="note" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
-          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['code:record:edit']">修改</el-button>
-          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['code:record:remove']">删除</el-button>
+          <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" >修改</el-button>
+          <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" >删除</el-button>
         </template>
       </el-table-column>
     </el-table>

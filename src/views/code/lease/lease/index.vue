@@ -10,7 +10,7 @@ truetut<template>
         />
       </el-form-item>
       <el-form-item label="资产类型" prop="type">
-        <el-select v-model="queryParams.type" placeholder="请选择资产类型" clearable>
+        <el-select v-model="queryParams.type" placeholder="请选择资产类型" clearable style="width: 200px">
           <el-option
             v-for="dict in device_type"
             :key="dict.value"
@@ -20,7 +20,7 @@ truetut<template>
         </el-select>
       </el-form-item>
       <el-form-item label="厂商" prop="supplier">
-        <el-select v-model="queryParams.supplier" placeholder="请选择厂商" clearable>
+        <el-select v-model="queryParams.supplier" placeholder="请选择厂商" clearable style="width: 200px">
           <el-option
             v-for="dict in supplier_name_id"
             :key="dict.value"
@@ -102,14 +102,13 @@ truetut<template>
           plain
           icon="Download"
           @click="handleExport"
-          v-hasPermi="['code:device:export']"
         >导出</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
     <el-table v-loading="loading" :data="deviceList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
+      <!-- <el-table-column type="selection" width="55" align="center" /> -->
       <!-- <el-table-column label="主键" align="center" prop="id" /> -->
       <el-table-column label="资产编号" align="center" prop="uuid" />
       <el-table-column label="资产类型" align="center" prop="type">
@@ -164,17 +163,15 @@ truetut<template>
           plain
           icon="Edit"
           @click="handleUpdateLease(scope.row)"
-          v-hasPermi="['code:device:edit']"
         >租赁</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
-          v-if="scope.row.status == 2"
-          type="success"
+          v-if="scope.row.status == 2|| scope.row.status == 3"
+          type="warning"
           plain
           icon="Edit"
           @click="handleUpdatereturn(scope.row)"
-          v-hasPermi="['code:device:edit']"
         >归还</el-button>
       </el-col>
         </template>
@@ -222,7 +219,7 @@ truetut<template>
         <el-form-item label="价格" prop="price" >
           <el-input v-model="form.price" placeholder="请输入价格" :disabled="true" />
         </el-form-item>
-        <el-form-item label="状态" prop="status"  >
+        <el-form-item label="状态" prop="status" v-if="false" >
           <el-select v-model="form.status" placeholder="请选择状态" :disabled="true">
             <el-option
               v-for="dict in computer_status"
@@ -232,6 +229,17 @@ truetut<template>
             ></el-option>
           </el-select>
         </el-form-item>
+          <el-form-item label="状态" prop="status" v-if="lease" >
+          <el-select v-model="form.status" placeholder="请选择状态">
+            <el-option
+              v-for="dict in lease_temporary_leases"
+              :key="dict.value"
+              :label="dict.label"
+              :value="parseInt(dict.value)"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="入库时间" prop="purchaseDate">
           <el-date-picker clearable
             v-model="form.purchaseDate"
@@ -241,7 +249,7 @@ truetut<template>
             placeholder="请选择入库时间">
           </el-date-picker>
         </el-form-item>
-        <el-form-item label="预计出库时间" prop="expectedRetirementDate">
+        <el-form-item label="出库时间" prop="expectedRetirementDate">
           <el-date-picker clearable
             v-model="form.expectedRetirementDate"
             type="date"
@@ -258,7 +266,7 @@ truetut<template>
             placeholder="租赁时间">
           </el-date-picker>
         </el-form-item>
-        <el-form-item v-show="form.status == 1" label="归还时间" prop="leaseEndTime">
+        <el-form-item v-if="form.status == 1" label="归还时间" prop="leaseEndTime">
           <el-date-picker clearable
             v-model="form.leaseEndTime"
             type="date"
@@ -270,7 +278,7 @@ truetut<template>
           <el-input v-model="form.employee" placeholder="请输入租借人" />
         </el-form-item>
         <el-form-item label="租借部门" prop="department">
-          <el-select v-model="form.department" placeholder="请选择租借部门">
+          <el-select v-model="form.department" filterable placeholder="请选择租借部门">
             <el-option
               v-for="dict in description_id"
               :key="dict.value"
@@ -298,7 +306,7 @@ import { listDevice, getDevice, delDevice} from "@/api/code/device";
 import {updateLease} from "@/api/code/lease/lease";
 
 const { proxy } = getCurrentInstance();
-const { description_id, computer_status,device_type, supplier_name_id } = proxy.useDict('description_id', 'computer_status','device_type', 'supplier_name_id');
+const { description_id, computer_status,device_type, supplier_name_id, lease_temporary_leases} = proxy.useDict('description_id', 'computer_status','device_type', 'supplier_name_id','lease_temporary_leases');
 
 const deviceList = ref([]);
 const open = ref(false);
@@ -309,9 +317,10 @@ const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
+const lease = ref(false);
 const data = reactive({
   form: {
-    leaseStartTime: null
+    leaseStartTime: null,
   },
   queryParams: {
     pageNum: 1,
@@ -362,6 +371,9 @@ const data = reactive({
     ],
     leaseStartTime: [
       { required: true, message: "租借时间不能为空", trigger: "blur" }
+    ],
+    leaseEndTime: [
+      { required: true, message: "归还时间不能为空", trigger: "blur" }
     ],
   }
 });
@@ -436,12 +448,12 @@ function handleUpdateLease(row) {
   const _id = row.id || ids.value
   getDevice(_id).then(response => {
     form.value = response.data;
+    lease.value = true;
     open.value = true;
     title.value = "租赁设备";
     form.value.status = 2;
     //设置租赁时间为当前时间
     form.value.leaseStartTime = formatToYYYYMMDD(new Date());
-    console.log(form.value.leaseStartTime)
   });
 }
 /** 归还 */
@@ -449,6 +461,7 @@ function handleUpdatereturn(row) {
   reset();
   const _id = row.id || ids.value
   getDevice(_id).then(response => {
+    lease.value=false;
     form.value = response.data;
     open.value = true;
     title.value = "归还设备";
@@ -463,6 +476,7 @@ function submitForm() {
   proxy.$refs["deviceRef"].validate(valid => {
     if (valid) {
       if (form.value.id != null) {
+        console.log(form.value);
         updateLease(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
           reset();
@@ -504,4 +518,5 @@ function formatToYYYYMMDD(date) {
 }
 
 getList();
+
 </script>

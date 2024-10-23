@@ -66,7 +66,7 @@
           plain
           icon="Plus"
           @click="handleAdd"
-          v-hasPermi="['code:device:add']"
+
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -76,7 +76,7 @@
           icon="Edit"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['code:device:edit']"
+
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -86,7 +86,7 @@
           icon="Delete"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['code:device:remove']"
+
         >删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -95,7 +95,7 @@
           plain
           icon="Download"
           @click="handleExport"
-          v-hasPermi="['code:device:export']"
+
         >导出</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
@@ -146,7 +146,7 @@
           plain
           icon="Edit"
           @click="handleUpdateLease(scope.row)"
-          v-hasPermi="['code:device:edit']"
+
         >租赁</el-button>
       </el-col>
           <!-- <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['code:device:edit']">修改</el-button> -->
@@ -381,4 +381,26 @@ function handleExport() {
 }
 
 getList();
+const options =[
+  {
+    label: '设备编号',
+    prop: 'uuid'
+  },
+  {
+    label: '设备状态',
+    prop: 'status'
+  },
+  {
+    label: '购买时间',
+    prop: 'purchaseDate'
+  },
+  {
+    label: '预计退租时间',
+    prop: 'expectedRetirementDate'
+  },
+  {
+    label: '租借人',
+    prop: 'employee'
+  }
+]
 </script>
